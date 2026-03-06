@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monster Scene Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blood:     #9b1c2e;
+    --gold:      #c9973a;
+    --parchment: #f0e6cc;
+    --shadow:    #0d0a05;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--shadow);
+    color: var(--parchment);
+    font-family: 'IM Fell English', Georgia, serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative; z-index: 1;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 6px; animation: fadeDown 0.8s ease both; }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7em; letter-spacing: 5px;
+    color: var(--gold); text-transform: uppercase;
+    opacity: 0.8; margin-bottom: 10px; display: block;
+  }
+  h1 {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(2em, 6vw, 4em);
+    color: var(--parchment);
+    text-shadow: 0 0 40px rgba(201,151,58,0.5), 0 2px 4px rgba(0,0,0,0.9);
+    line-height: 1.1; letter-spacing: 2px;
+  }
+  h1 span { color: var(--blood); }
+  .tagline {
+    font-style: italic;
+    color: rgba(240,230,204,0.5);
+    font-size: 0.9em; margin-top: 8px; letter-spacing: 1px;
+  }
+  .ornament {
+    display: flex; align-items: center; gap: 12px;
+    margin: 16px auto; max-width: 500px;
+    color: var(--gold); opacity: 0.5; font-size: 1.1em;
+  }
+  .ornament::before, .ornament::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  /* ── SUBTLE THEME LABEL ── */
+  .theme-label {
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68em;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(240,230,204,0.28);
+    animation: fadeDown 0.8s 0.1s ease both;
+  }
+  .theme-label em {
+    color: rgba(201,151,58,0.5);
+    font-style: normal;
+    transition: color 0.5s;
+  }
+
+  /* ── INTRO ── */
+  .intro {
+    background: rgba(26,18,8,0.7);
+    border: 1px solid rgba(201,151,58,0.18);
+    border-left: 3px solid var(--blood);
+    padding: 13px 18px;
+    max-width: 860px; margin: 0 auto 26px;
+    font-size: 0.87em; line-height: 1.85;
+    color: rgba(240,230,204,0.7);
+    animation: fadeDown 0.8s 0.12s ease both;
+  }
+  .intro strong { color: var(--parchment); }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; margin-bottom: 16px; flex-wrap: wrap;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+  .month-badge {
+    font-family: 'Cinzel', serif; font-size: 0.82em;
+    letter-spacing: 3px; color: var(--gold);
+    background: rgba(201,151,58,0.08);
+    border: 1px solid rgba(201,151,58,0.28);
+    padding: 7px 18px; border-radius: 2px; text-transform: uppercase;
+  }
+  .btn {
+    font-family: 'Cinzel', serif; font-size: 0.77em;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; border: none;
+    padding: 9px 20px; border-radius: 2px; transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--blood); color: var(--parchment);
+    box-shadow: 0 0 20px rgba(155,28,46,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .btn-primary:hover { background: #b52235; box-shadow: 0 0 28px rgba(155,28,46,0.6); transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: rgba(240,230,204,0.55);
+    border: 1px solid rgba(240,230,204,0.18);
+  }
+  .btn-secondary:hover { color: var(--parchment); border-color: rgba(240,230,204,0.45); }
+
+  /* ── RESULT BAR ── */
+  .result-bar {
+    display: none;
+    background: rgba(155,28,46,0.13);
+    border: 1px solid rgba(155,28,46,0.3);
+    border-radius: 2px; padding: 11px 18px;
+    max-width: 860px; margin: 0 auto 22px;
+    font-size: 0.81em; line-height: 1.7;
+    color: rgba(240,230,204,0.78);
+  }
+  .result-bar.visible { display: block; animation: fadeDown 0.35s ease; }
+  .result-bar strong { color: #e06070; }
+
+  /* ── MONTH PREVIEW ── */
+  .month-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .month-nav-label {
+    font-family: 'Cinzel', serif; font-size: 0.67em;
+    letter-spacing: 2px; color: rgba(240,230,204,0.28); text-transform: uppercase;
+  }
+  .month-chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+  .chip {
+    font-family: 'Cinzel', serif; font-size: 0.63em;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 2px;
+    cursor: pointer; border: 1px solid rgba(240,230,204,0.12);
+    color: rgba(240,230,204,0.35); background: transparent;
+    transition: all 0.18s;
+  }
+  .chip:hover  { color: var(--parchment); border-color: rgba(240,230,204,0.35); }
+  .chip.active { color: var(--gold); border-color: rgba(201,151,58,0.55); background: rgba(201,151,58,0.08); }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: linear-gradient(160deg, rgba(26,18,8,0.95), rgba(18,12,4,0.98));
+    border: 1px solid rgba(201,151,58,0.13);
+    border-radius: 3px; overflow: hidden;
+    position: relative;
+    animation: fadeUp 0.6s ease both;
+    transition: box-shadow 0.3s;
+  }
+  .card:hover { box-shadow: 0 8px 38px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,151,58,0.22); }
+  .card::before { content:'✦'; position:absolute; top:5px; left:8px; font-size:0.5em; color:var(--gold); opacity:0.3; }
+  .card::after  { content:'✦'; position:absolute; bottom:5px; right:8px; font-size:0.5em; color:var(--gold); opacity:0.3; }
+
+  /* rotating categories get a subtle accent stripe */
+  .card.rotating::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--blood), transparent); opacity: 0.6; }
+
+  .card-header {
+    padding: 10px 16px; display: flex; align-items: center;
+    gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.045);
+  }
+  .cat-0 .card-header { background: linear-gradient(90deg, rgba(155,28,46,0.3), transparent); }
+  .cat-1 .card-header { background: linear-gradient(90deg, rgba(30,60,120,0.3), transparent); }
+  .cat-2 .card-header { background: linear-gradient(90deg, rgba(80,30,120,0.3), transparent); }
+  .cat-3 .card-header { background: linear-gradient(90deg, rgba(150,100,20,0.3), transparent); }
+  .cat-4 .card-header { background: linear-gradient(90deg, rgba(20,100,50,0.3), transparent); }
+  .cat-5 .card-header { background: linear-gradient(90deg, rgba(150,70,20,0.3), transparent); }
+
+  .cat-icon { font-size: 1.25em; }
+  .cat-label { font-family: 'Cinzel', serif; font-size: 0.7em; letter-spacing: 2.5px; text-transform: uppercase; }
+  .cat-0 .cat-label { color: #e06070; }
+  .cat-1 .cat-label { color: #7090e0; }
+  .cat-2 .cat-label { color: #b070e0; }
+  .cat-3 .cat-label { color: #e0b850; }
+  .cat-4 .cat-label { color: #60c080; }
+  .cat-5 .cat-label { color: #e08050; }
+
+  /* tiny "rotates monthly" badge */
+  .rotates-badge {
+    margin-left: 8px;
+    font-family: 'Cinzel', serif; font-size: 0.6em;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(155,28,46,0.7);
+    border: 1px solid rgba(155,28,46,0.25);
+    padding: 1px 6px; border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  .cat-num { margin-left: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+  thead th {
+    padding: 5px 10px 4px;
+    font-family: 'Cinzel', serif; font-size: 0.63em; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(240,230,204,0.22); border-bottom: 1px solid rgba(255,255,255,0.04); text-align: left;
+  }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:nth-child(odd) { background: rgba(255,255,255,0.016); }
+  tbody tr:hover          { background: rgba(201,151,58,0.07); }
+  td { padding: 5px 10px; vertical-align: middle; }
+  .roll { font-family: 'Cinzel', serif; font-size: 0.7em; color: rgba(240,230,204,0.26); width: 52px; white-space: nowrap; }
+  .prompt { color: rgba(240,230,204,0.87); }
+
+  tr.highlight { background: rgba(155,28,46,0.22) !important; animation: pulse 1.1s ease; }
+  tr.highlight .roll   { color: var(--blood); }
+  tr.highlight .prompt { color: #fff; font-style: italic; }
+  @keyframes pulse {
+    0%   { background: rgba(155,28,46,0.5); }
+    100% { background: rgba(155,28,46,0.22); }
+  }
+
+  footer {
+    text-align: center; margin-top: 40px;
+    color: rgba(240,230,204,0.18); font-size: 0.73em;
+    letter-spacing: 2px; font-family: 'Cinzel', serif; text-transform: uppercase;
+  }
+
+  @keyframes fadeDown {
+    from { opacity:0; transform:translateY(-16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .card:nth-child(1){animation-delay:.08s} .card:nth-child(2){animation-delay:.15s}
+  .card:nth-child(3){animation-delay:.22s} .card:nth-child(4){animation-delay:.29s}
+  .card:nth-child(5){animation-delay:.36s} .card:nth-child(6){animation-delay:.43s}
+
+  @media(max-width:520px){ .grid{grid-template-columns:1fr} h1{font-size:1.8em} }
+  @media print {
+    body{background:#fff;color:#111} body::before,body::after{display:none}
+    .controls,.result-bar,.month-nav{display:none!important}
+    .card{border-color:#ccc;background:#fff;color:#111;break-inside:avoid}
+    .card-header{background:#f0f0f0!important} .cat-label,.prompt{color:#111!important} .roll{color:#666!important}
+    h1{color:#111;text-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header>
+    <span class="eyebrow">A Monthly Drawing Challenge</span>
+    <h1>Monster <span>Scene</span> Builder</h1>
+    <p class="tagline">Roll once. Draw all month. Build something wicked.</p>
+    <div class="ornament">⚜</div>
+  </header>
+
+  <div class="theme-label" id="themeLabel"></div>
+
+  <div class="intro">
+    Roll a D100 for each category — or hit <strong>Roll All</strong> to generate your complete scene at once. The <strong>Subject, Setting, and Mood</strong> tables rotate every month, cycling through a large pool year after year. <strong>Lighting, Props, and Pose</strong> stay constant — they work with anything. On the 1st of each month, a new seed is auto-generated so every visitor starts from the same rolls.
+  </div>
+
+  <div class="controls">
+    <div class="month-badge" id="monthBadge">— Month —</div>
+    <button class="btn btn-primary" onclick="rollAll()">🎲 Roll All</button>
+    <button class="btn btn-secondary" onclick="clearAll()">✕ Clear</button>
+  </div>
+
+  <div class="result-bar" id="resultBar"></div>
+
+  <div class="month-nav">
+    <span class="month-nav-label">Preview:</span>
+    <div class="month-chips" id="monthChips"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>Monster Scene Builder &nbsp;·&nbsp; Subject, Setting &amp; Mood rotate monthly &nbsp;·&nbsp; Seed refreshes the 1st of every month</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  ROTATING POOLS  — Subject, Setting, Mood
+//  These cycle through the list: pool index = (year * 12 + month) % pool.length
+//  Each pool entry has a name (shown as the subtle theme label) + 100 entries
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SUBJECT_POOL = [
+  {
+    name: 'Classic Creatures',
+    entries: [
+      [1,2,'Mermaid'],[3,4,'Cyclops'],[5,6,'Dragon'],[7,8,'Vampire'],[9,10,'Insect creature'],
+      [11,12,'Eldritch horror'],[13,14,'Elemental'],[15,16,'Hellhound'],[17,18,'Mummy'],[19,20,'Gargoyle'],
+      [21,22,'Zombie'],[23,24,'Slime creature'],[25,26,'Cat beast'],[27,28,'Centaur'],[29,30,'Phoenix'],
+      [31,32,'Minotaur'],[33,34,'Plant creature'],[35,36,'Satyr'],[37,38,'Werewolf'],[39,40,'Dark unicorn'],
+      [41,42,'Ghost'],[43,44,'Construct / automaton'],[45,46,'Naga'],[47,48,'Sphinx'],[49,50,'Selkie'],
+      [51,52,'Wendigo'],[53,54,'Banshee'],[55,56,'Kitsune'],[57,58,'Lich'],[59,60,'Doppelganger'],
+      [61,62,'Mothman'],[63,64,'Gorgon'],[65,66,'Chimera'],[67,68,'Imp'],[69,70,'Djinn'],
+      [71,72,'Siren'],[73,74,'Goblin'],[75,76,'Ghoul'],[77,78,'Revenant'],[79,80,'Shapeshifter'],
+      [81,82,'Sea serpent'],[83,84,'Wraith'],[85,86,'Leviathan'],[87,88,'Lamia'],[89,90,'Specter'],
+      [91,92,'Golem'],[93,94,'Oni'],[95,96,'Manticore'],[97,98,'Monster hunter'],[99,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Frozen Depths',
+    entries: [
+      [1,4,'Frost giant'],[5,8,'Ice wraith'],[9,12,'Snow leopard spirit'],[13,16,'Glacial golem'],
+      [17,20,'Yeti'],[21,24,'Frozen vampire'],[25,28,'Arctic siren'],[29,32,'Wolf pack spirit'],
+      [33,36,'Snow queen'],[37,40,'Blizzard elemental'],[41,44,'Frozen mermaid'],[45,48,'Ice phoenix'],
+      [49,52,'Permafrost ghoul'],[53,56,'Arctic selkie'],[57,60,'Wendigo'],[61,64,'Frost fae'],
+      [65,68,'Crystal dragon'],[69,72,'Tundra banshee'],[73,76,'Frozen knight'],[77,80,'Snowstorm witch'],
+      [81,84,'Polar bear deity'],[85,88,'Cryo-construct'],[89,92,'Starving specter'],[93,96,'Ice lich'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Dark Romance',
+    entries: [
+      [1,4,'Vampire lover'],[5,8,'Jealous ghost'],[9,12,'Cursed bride'],[13,16,'Heartless fae'],
+      [17,20,'Obsessed revenant'],[21,24,'Succubus / incubus'],[25,28,'Rose-witch'],[29,32,'Death personified'],
+      [33,36,'Lovelorn banshee'],[37,40,'Corrupted angel'],[41,44,'Siren'],[45,48,'Mirror shade'],
+      [49,52,'Desperate lich'],[53,56,'Dark muse'],[57,60,'Thorn elemental'],[61,64,'Phantom partner'],
+      [65,68,'Blood witch'],[69,72,'Possessive specter'],[73,76,'Doppelganger lover'],[77,80,'Lamia'],
+      [81,84,'Cursed royalty'],[85,88,'Moth fae'],[89,92,'Heartstealer imp'],[93,96,'Shadow twin'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Feral Kingdom',
+    entries: [
+      [1,4,'Wolf shapeshifter'],[5,8,'Crow witch'],[9,12,'Fox spirit'],[13,16,'Bear deity'],
+      [17,20,'Snake naga'],[21,24,'Moth faerie'],[25,28,'Stag forest god'],[29,32,'Feral cat person'],
+      [33,36,'Spider queen'],[37,40,'Serpent river goddess'],[41,44,'Deer spirit'],[45,48,'Boar warlord'],
+      [49,52,'Owl oracle'],[53,56,'Raven trickster'],[57,60,'Jaguar warrior'],[61,64,'Eel sea spirit'],
+      [65,68,'Horse goddess'],[69,72,'Bat swarm-form'],[73,76,'Mantis assassin'],[77,80,'Otter river sprite'],
+      [81,84,'Bull colossus'],[85,88,'Hawk aerial hunter'],[89,92,'Rat plague spirit'],[93,96,'Whale sea god'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Folklore & Fae',
+    entries: [
+      [1,4,'Unseelie court noble'],[5,8,'Changeling'],[9,12,'Baba Yaga figure'],[13,16,'Puca / trickster beast'],
+      [17,20,'Will-o-wisp spirit'],[21,24,'Hag in disguise'],[25,28,'Green Man'],[29,32,'Banshee'],
+      [33,36,'Leprechaun (sinister)'],[37,40,'Selkie'],[41,44,'Pixie swarm'],[45,48,'River spirit'],
+      [49,52,'Dullahan'],[53,56,'Tooth fairy (dark)'],[57,60,'Sleep hag / night-mare'],[61,64,'Seelie knight'],
+      [65,68,'Boggart'],[69,72,'Merrow'],[73,76,'Cait Sith'],[77,80,'Erlking'],
+      [81,84,'Spring maiden spirit'],[85,88,'Woodwose'],[89,92,'Korrigans'],[93,96,'Fae hunter'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Sea Horrors',
+    entries: [
+      [1,4,'Kraken'],[5,8,'Deep sea mermaid'],[9,12,'Drowned sailor ghost'],[13,16,'Leviathan'],
+      [17,20,'Crab deity'],[21,24,'Angler fish monster'],[25,28,'Siren on rocks'],[29,32,'Selkie'],
+      [33,36,'Sea hag'],[37,40,'Jellyfish spirit'],[41,44,'Shark shapeshifter'],[45,48,'Ship-possessing ghost'],
+      [49,52,'Coral golem'],[53,56,'Eel witch'],[57,60,'Brine revenant'],[61,64,'Tide goddess'],
+      [65,68,'Pearl collector (cursed)'],[69,72,'Sea serpent'],[73,76,'Barnacled knight'],
+      [77,80,'Void fish (abyssal)'],[81,84,'Mermaid huntress'],[85,88,'Storm elemental'],
+      [89,92,'Wraith of a sunken ship'],[93,96,'Merrow'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Infernal',
+    entries: [
+      [1,4,'Demon lord'],[5,8,'Fire elemental'],[9,12,'Djinn (bound)'],[13,16,'Fallen angel'],
+      [17,20,'Hellhound'],[21,24,'Imp swarm'],[25,28,'Desert witch'],[29,32,'Sun god (corrupted)'],
+      [33,36,'Succubus'],[37,40,'Lava golem'],[41,44,'Scorpion spirit'],[45,48,'Mirage entity'],
+      [49,52,'Cursed sultan'],[53,56,'Phoenix'],[57,60,'Sand wraith'],[61,64,'Hellfire smith'],
+      [65,68,'Demon general'],[69,72,'Salamander deity'],[73,76,'Treasure guardian'],
+      [77,80,'Sun vampire'],[81,84,'Desert banshee'],[85,88,'Obsidian knight'],
+      [89,92,'Ember witch'],[93,96,'Infernal bureaucrat'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'The Harvest Dark',
+    entries: [
+      [1,4,'Scarecrow (animated)'],[5,8,'Harvest god'],[9,12,'Corn spirit'],[13,16,'Farm witch'],
+      [17,20,'Grain golem'],[21,24,'Plague doctor'],[25,28,'Earth spirit (hungry)'],[29,32,'Hollow figure'],
+      [33,36,'Amber witch'],[37,40,'Harvest guardian'],[41,44,'Locust swarm-form'],[45,48,'Rotting dryad'],
+      [49,52,'Farmstead ghost'],[53,56,'Root creature'],[57,60,'Barley spirit'],[61,64,'Autumn fae'],
+      [65,68,'Decay elemental'],[69,72,'Wicker effigy given life'],[73,76,'Crow deity'],
+      [77,80,'The Reaper (literal)'],[81,84,'Drought spirit'],[85,88,'Cider witch'],
+      [89,92,'Threshing machine creature'],[93,96,'Grain bag horror'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Haunted Architecture',
+    entries: [
+      [1,4,'House poltergeist'],[5,8,'The previous owner (ghost)'],[9,12,'Staircase entity'],
+      [13,16,'Mirror shade'],[17,20,'Wall-crawler'],[21,24,'Attic thing'],[25,28,'Basement dweller'],
+      [29,32,"The architect's curse"],[33,36,'Door that opens itself'],[37,40,'Chimney spirit'],
+      [41,44,'Cellar revenant'],[45,48,"Room not on the map"],[49,52,'Wallpaper pattern (alive)'],
+      [53,56,'Shadow cast by no one'],[57,60,'Foundation creature'],[61,64,'Window watcher'],
+      [65,68,'The house itself'],[69,72,'Corridor ghost'],[73,76,"Child who isn't there"],
+      [77,80,'Clock that stopped'],[81,84,'Portrait subject'],[85,88,'Floor-board knocker'],
+      [89,92,'Bell tower presence'],[93,96,'Library ghost'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'All Hallows',
+    entries: [
+      [1,3,'Witch (classic)'],[4,6,'Vampire (gothic)'],[7,9,'Werewolf'],[10,12,'Skeleton'],
+      [13,15,'Pumpkin creature'],[16,18,'Black cat spirit'],[19,21,'Ghost'],[22,24,'Zombie'],
+      [25,27,'Mummy'],[28,30,"Frankenstein's monster"],[31,33,'Scarecrow (alive)'],[34,36,'Banshee'],
+      [37,39,'Plague doctor'],[40,42,'Shadow person'],[43,45,'Candy corn demon'],[46,48,'Harvest witch'],
+      [49,51,"Jack o' lantern golem"],[52,54,'Cemetery spirit'],[55,57,'Dullahan'],[58,60,'Spider queen'],
+      [61,63,'Hag'],[64,66,'Graveyard cat'],[67,69,'Masked figure'],[70,72,'Imp'],
+      [73,75,'Wax figure come to life'],[76,78,'Corn maze minotaur'],[79,81,'Haunted house itself'],
+      [82,84,'Trick-or-treat horror'],[85,87,'Cauldron creature'],[88,90,'Night hag'],
+      [91,93,"Rotten jack o' lantern"],[94,96,'Costume that became real'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Mourning Season',
+    entries: [
+      [1,4,'Returned loved one (changed)'],[5,8,'Psychopomp'],[9,12,'Grieving necromancer'],
+      [13,16,'Ghost (unfinished)'],[17,20,'Death deity'],[21,24,'Ancestor spirit'],[25,28,'Widow specter'],
+      [29,32,'Dirge singer'],[33,36,'Bone oracle'],[37,40,'Funeral rite spirit'],[41,44,'Cemetery warden'],
+      [45,48,'Lost child ghost'],[49,52,'Mourner-devourer'],[53,56,'Relic keeper'],[57,60,'Underworld ferryman'],
+      [61,64,'Clairvoyant medium'],[65,68,'Shadow twin'],[69,72,'The Forgotten'],[73,76,'Offrenda spirit'],
+      [77,80,'Skull guardian'],[81,84,'Weeping effigy'],[85,88,'Wake spirit'],[89,92,'Condolence demon'],
+      [93,96,'The last memory of someone'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Midwinter Dread',
+    entries: [
+      [1,4,'Krampus'],[5,8,'Belsnickel'],[9,12,'Perchta'],[13,16,'Dark gift-giver'],
+      [17,20,'Yule goat (sinister)'],[21,24,'Holly king'],[25,28,'Solstice spirit'],[29,32,'Frozen gift-giver'],
+      [33,36,'Chimney horror'],[37,40,'Gift that came with something'],[41,44,'Midwinter forest deity'],
+      [45,48,'Snow witch'],[49,52,'Ice fae'],[53,56,'Straw bear'],[57,60,'The Grandmother of Winter'],
+      [61,64,'Dark elf'],[65,68,'Frozen revenant'],[69,72,'Coal spirit'],[73,76,'Bell-ringer (wrong bells)'],
+      [77,80,'December ghost'],[81,84,'Hearth guardian turned rogue'],[85,88,'Advent horror'],
+      [89,92,'Longest night entity'],[93,96,'Gift wrapping creature'],[97,100,"Player's choice"]
+    ]
+  },
+  // ── additional pools so the cycle takes years to repeat ──
+  {
+    name: 'Undead Courts',
+    entries: [
+      [1,4,'Vampire lord'],[5,8,'Lich queen'],[9,12,'Skeleton knight'],[13,16,'Revenant noble'],
+      [17,20,'Bone golem'],[21,24,'Wight'],[25,28,'Draugr'],[29,32,'Death knight'],
+      [33,36,'Mummy pharaoh'],[37,40,'Animated armour'],[41,44,'Corpse bride'],[45,48,'Graveknight'],
+      [49,52,'Shadow spawn'],[53,56,'Shrouded specter'],[57,60,'Barrow wight'],[61,64,'Crypt guardian'],
+      [65,68,'Tomb lord'],[69,72,'Plague bearer'],[73,76,'Bone witch'],[77,80,'Dread herald'],
+      [81,84,'Undying alchemist'],[85,88,'Fell wizard'],[89,92,'Risen champion'],[93,96,'Necrotic fae'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Divine & Fallen',
+    entries: [
+      [1,4,'Corrupted angel'],[5,8,'Fallen paladin'],[9,12,'Trickster god'],[13,16,'War deity'],
+      [17,20,'Storm goddess'],[21,24,'Death god'],[25,28,'Harvest deity'],[29,32,'Moon spirit'],
+      [33,36,'Sun guardian (dark)'],[37,40,'Chaos herald'],[41,44,'Void priest'],[45,48,'Prophet (mad)'],
+      [49,52,'Inquisitor turned creature'],[53,56,'Divine beast'],[57,60,'Oracle devourer'],
+      [61,64,'Fate cutter'],[65,68,'Dream god'],[69,72,'Plague saint'],[73,76,'War angel'],
+      [77,80,'Idol given life'],[81,84,'Cursed champion'],[85,88,'Apostate deity'],[89,92,'Light eater'],
+      [93,96,'Broken god'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Urban Horrors',
+    entries: [
+      [1,4,'Subway tunnel thing'],[5,8,'Skin-walker in the city'],[9,12,'Corporate demon'],
+      [13,16,'Mannequin (alive)'],[17,20,'Street artist (cursed)'],[21,24,'Alley cat god'],
+      [25,28,'Bus that never stops'],[29,32,'Mirror city dweller'],[33,36,'Disappearing neighbour'],
+      [37,40,'Elevator entity'],[41,44,'Lost tourist (wrong city)'],[45,48,'Night security guard (wrong)'],
+      [49,52,'CCTV watcher'],[53,56,'Parking garage ghost'],[57,60,'Rooftop creature'],
+      [61,64,'Sewer oracle'],[65,68,'Coffee shop regular (wrong)'],[69,72,'Midnight delivery person'],
+      [73,76,'Graffiti that moves'],[77,80,'Signal interference entity'],[81,84,'Construction site spirit'],
+      [85,88,'Locked room tenant'],[89,92,'Lost phone owner'],[93,96,'Last train passenger'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Cosmic Horror',
+    entries: [
+      [1,4,'Star-born entity'],[5,8,'Void walker'],[9,12,'Dream eater'],[13,16,'Reality fracture being'],
+      [17,20,'Colour out of space'],[21,24,'Dimensional rift guardian'],[25,28,'Mind devourer'],
+      [29,32,'Probability horror'],[33,36,'Forgotten god'],[37,40,'Many-angled one'],
+      [41,44,'Hive intelligence'],[45,48,'Temporal predator'],[49,52,'Observer from outside'],
+      [53,56,'Skin thief'],[57,60,'The one that answers'],[61,64,'Recursive nightmare'],
+      [65,68,'Eye in the black'],[69,72,'Screaming geometry'],[73,76,'Colour-eating moth'],
+      [77,80,'Library of memories'],[81,84,'Anti-sound entity'],[85,88,'The weight of knowing'],
+      [89,92,'Gravity worshipper'],[93,96,'Last thing awake'],[97,100,"Player's choice"]
+    ]
+  }
+];
+
+const SETTING_POOL = [
+  {
+    name: 'Gothic & Ruins',
+    entries: [
+      [1,2,'Sunken shipwreck'],[3,4,'Ruined cathedral'],[5,6,'Ancient forest clearing'],[7,8,'Flooded crypt'],
+      [9,10,'Rooftop city at night'],[11,12,'Underground lake'],[13,14,'Moonlit graveyard'],
+      [15,16,'Storm-lit cliffs'],[17,18,'Ancient library'],[19,20,'Swamp at dusk'],
+      [21,22,'Desert ruins'],[23,24,'Candlelit manor'],[25,26,'Volcanic crater'],[27,28,'Mountain peak'],
+      [29,30,'Dark fairy tale woods'],[31,32,'Neon city alley'],[33,34,'Blizzard plains'],
+      [35,36,'Haunted theatre'],[37,38,'Tar pits'],[39,40,'Eclipse sky'],
+      [41,42,'Ritual stone circle'],[43,44,'Icy cave'],[45,46,'Abandoned amusement park'],
+      [47,48,'Dust-storm wasteland'],[49,50,'Bioluminescent cave'],[51,52,'Carnival at midnight'],
+      [53,54,'Fog-choked docks'],[55,56,'Frozen tundra'],[57,58,'Lava fields'],
+      [59,60,'Overgrown greenhouse'],[61,62,'Floating sky island'],[63,64,'Abandoned hospital'],
+      [65,66,'Bone throne room'],[67,68,'Mirror labyrinth'],[69,70,'Train at speed, night'],
+      [71,72,'Clockwork factory'],[73,74,'Deep ocean trench'],[75,76,'Dreamscape void'],
+      [77,78,'Cursed village square'],[79,80,'Prison tower cell'],[81,82,'Underwater palace'],
+      [83,84,'Scorched battlefield'],[85,86,'Moonlit garden maze'],[87,88,'Cursed tavern interior'],
+      [89,90,'Ship deck in storm'],[91,92,'Mushroom forest'],[93,94,'Star-filled void'],
+      [95,96,'Ancient coliseum'],[97,98,'Mirror realm'],[99,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Frozen World',
+    entries: [
+      [1,5,'Frozen lake at midnight'],[6,10,'Glacial cave, blue light'],[11,15,'Sunken icebound ship'],
+      [16,20,'Blizzard mountain pass'],[21,25,'Abandoned arctic station'],[26,30,'Frosted forest at dawn'],
+      [31,35,'Snow-buried ruins'],[36,40,'Under a cracked frozen sea'],[41,45,'Tundra plains, eclipse'],
+      [46,50,'Ice palace interior'],[51,55,'Avalanche mid-fall'],[56,60,'Frostbitten cathedral'],
+      [61,65,'Polar night, aurora above'],[66,70,'Crystalline ice cave'],[71,75,'Snowstorm whiteout'],
+      [76,80,'Permafrost bog'],[81,85,'Frozen waterfall'],[86,90,'Arctic sea cliff'],
+      [91,95,'Snow-covered graveyard'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Romantic Gothic',
+    entries: [
+      [1,5,'Overgrown rose garden at midnight'],[6,10,'Candlelit manor ballroom'],[11,15,'Crumbling chapel'],
+      [16,20,'Gothic bedroom, red curtains'],[21,25,'Moonlit cemetery'],[26,30,'Flooded crypt'],
+      [31,35,'Opera house, empty'],[36,40,'Mirror-lined hallway'],[41,45,'Abandoned wedding venue'],
+      [46,50,'Library with forbidden books'],[51,55,'Cliffside in a storm'],[56,60,'Secret garden, thorns'],
+      [61,65,'Candlelit cellar'],[66,70,'Rooftop under blood moon'],[71,75,'Throne room, rose-covered'],
+      [76,80,'Misty lake, small boat'],[81,85,'Tower room with one window'],[86,90,'Masquerade ballroom'],
+      [91,95,'Sunken garden, flooded'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Wild & Primal',
+    entries: [
+      [1,5,'Ancient overgrown forest'],[6,10,'Riverbank at dawn'],[11,15,'Meadow under a storm'],
+      [16,20,'Cliff face with nesting birds'],[21,25,'Deep jungle, humid'],[26,30,'Prairie at golden hour'],
+      [31,35,'Subterranean burrow'],[36,40,'Tidal cave'],[41,45,'Forest canopy, high up'],
+      [46,50,'Flooded wetlands'],[51,55,'Mountain spring'],[56,60,'Desert at night'],
+      [61,65,'Root system, underground'],[66,70,'Moss-covered ruins'],[71,75,'Storm-flattened wheat field'],
+      [76,80,'Volcanic hot spring'],[81,85,'Bioluminescent cave'],[86,90,'Burned-out forest regrowth'],
+      [91,95,'Coastal cliff, crashing waves'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Fae Lands',
+    entries: [
+      [1,5,'Mushroom ring at dusk'],[6,10,'Overgrown hollow tree'],[11,15,'Crossroads at midnight'],
+      [16,20,'Mist-covered moor'],[21,25,'Thorn hedge maze'],[26,30,'Abandoned village'],
+      [31,35,'Twilight between two worlds'],[36,40,'Under a fairy hill'],[41,45,'River crossing, night'],
+      [46,50,'Ruin covered in wildflowers'],[51,55,'Ancient standing stones'],[56,60,'Orchard at harvest'],
+      [61,65,'Underground fae market'],[66,70,'Moonlit wheat field'],[71,75,'Lake with no reflection'],
+      [76,80,'Cottage in the deep woods'],[81,85,'Cliff with sea below'],[86,90,'Burnt-out shrine'],
+      [91,95,'The road that goes forever'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'The Deep Sea',
+    entries: [
+      [1,5,'Abyssal trench, pitch dark'],[6,10,'Shipwreck interior, flooded'],[11,15,'Surface at night, no land'],
+      [16,20,'Tidal cave at high tide'],[21,25,'Coastal cliff, crashing waves'],[26,30,'Fog-bound harbour'],
+      [31,35,'Coral reef, bioluminescent'],[36,40,'Underwater palace ruins'],[41,45,'Open ocean in a storm'],
+      [46,50,'Lighthouse, abandoned'],[51,55,'Sea floor, volcanic vents'],[56,60,'Iceberg, below the surface'],
+      [61,65,'Flooded drowned city'],[66,70,'Waterlogged library'],[71,75,'Ship deck mid-hurricane'],
+      [76,80,'Whirlpool centre'],[81,85,'Sunken church steeple'],[86,90,'Black sand beach at night'],
+      [91,95,'Sea cave at low tide'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Hellscapes',
+    entries: [
+      [1,5,'Volcanic crater rim'],[6,10,'Desert at high noon'],[11,15,'Hellish palace interior'],
+      [16,20,'Burning city'],[21,25,'Ashen wasteland'],[26,30,'Desert oasis (false)'],
+      [31,35,'Infernal throne room'],[36,40,'Lava field, solidifying'],[41,45,'Sand dune sea at night'],
+      [46,50,'Burning forest'],[51,55,'Desert ruins at sunset'],[56,60,'Brimstone canyon'],
+      [61,65,'Crossroads in a heatwave'],[66,70,'Obsidian plains'],[71,75,'Abandoned desert temple'],
+      [76,80,'Sunken city in sand'],[81,85,'Caravan at night, fires'],[86,90,'Burning river'],
+      [91,95,'Mirage cityscape'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Rural Horror',
+    entries: [
+      [1,5,'Corn maze at night'],[6,10,'Burning wheat field'],[11,15,'Old barn, door ajar'],
+      [16,20,'Harvest festival, no people'],[21,25,'Pumpkin field at dusk'],[26,30,'Dried-out well'],
+      [31,35,'Root cellar'],[36,40,'Scarecrow field'],[41,45,'Apple orchard, overripe'],
+      [46,50,'Rusted silo'],[51,55,'Farmhouse kitchen, overgrown'],[56,60,'Country road, last light'],
+      [61,65,'Hay loft, shadows'],[66,70,'Crumbling stone wall boundary'],[71,75,'Mill pond at dusk'],
+      [76,80,'Sunflower field, faces wrong'],[81,85,'Abandoned church, one town over'],
+      [86,90,'Last house before the dark'],[91,95,"A field that doesn't end"],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'The House',
+    entries: [
+      [1,5,'The room at the end of the hall'],[6,10,'Spiralling staircase'],[11,15,'Abandoned ballroom'],
+      [16,20,'Flooded cellar'],[21,25,'Nursery with no child'],[26,30,'Library, books all wrong'],
+      [31,35,'Kitchen where things move'],[36,40,'Attic with a locked trunk'],[41,45,'Master bedroom, one side undisturbed'],
+      [46,50,'Long corridor, no doors'],[51,55,'Conservatory overgrown inside'],[56,60,'Music room, no musician'],
+      [61,65,'Hidden room behind a bookcase'],[66,70,"Servants' quarters"],[71,75,'Roof access, crow-visited'],
+      [76,80,'Wine cellar, deeper than it should be'],[81,85,'Study with too many clocks'],
+      [86,90,'Chapel in the west wing'],[91,95,'Foundation, pre-house layer'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Halloween Night',
+    entries: [
+      [1,4,'Moonlit cemetery'],[5,8,'Haunted house porch'],[9,12,'Corn maze at night'],
+      [13,16,'Cobwebbed attic'],[17,20,'Trick-or-treat street, no people'],[21,24,'Pumpkin patch'],
+      [25,28,'Bonfire in a clearing'],[29,32,'Abandoned carnival'],[33,36,'Dark forest path'],
+      [37,40,"Witch's kitchen"],[41,44,'Graveyard at midnight'],[45,48,'Costume shop, after hours'],
+      [49,52,'Church, Halloween night'],[53,56,'School hallway, dark'],[57,60,'Suburban street, lights off'],
+      [61,64,"Old barn with jack o' lanterns"],[65,68,'Rooftop under full moon'],
+      [69,72,'Bakery full of cursed goods'],[73,76,'Haunted hayride'],[77,80,'Fog-covered town square'],
+      [81,84,'Ancient ritual grounds, modern overlay'],[85,88,'Mirror maze at a fair'],
+      [89,92,'Threshold: inside vs outside, Halloween'],[93,96,'The road the kids always avoid'],
+      [97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Mourning Places',
+    entries: [
+      [1,5,'Cemetery, Day of the Dead'],[6,10,'House where someone died'],[11,15,'Church after the service'],
+      [16,20,'Graveyard in winter rain'],[21,25,'Altar of offerings'],[26,30,'Hospital room, long after'],
+      [31,35,'Old photographs, scattered'],[36,40,'Sitting room, curtains drawn'],[41,45,'River crossing to beyond'],
+      [46,50,'Funeral procession, night'],[51,55,'Underground columbarium'],[56,60,'Ossuary or bone chapel'],
+      [61,65,'Home with one seat always set'],[66,70,'Empty bedroom, things untouched'],[71,75,'Graveyard hill, city view'],
+      [76,80,'Candlelit vigil'],[81,85,'Storm on a coastal cliff'],[86,90,'Autumn garden, everything dying'],
+      [91,95,'The last place they were seen'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Midwinter',
+    entries: [
+      [1,5,'Snowbound village at night'],[6,10,'Chimney, from inside'],[11,15,'Midwinter forest, ancient trees'],
+      [16,20,'Hearth room, fire low'],[21,25,'Rooftop in a blizzard'],[26,30,"Children's bedroom, not safe"],
+      [31,35,'Solstice bonfire'],[36,40,'Alpine mountain pass'],[41,45,'Christmas market, after hours'],
+      [46,50,'Dark forest path, lantern only'],[51,55,'Church in snow'],[56,60,'Old farmhouse, wrong outside'],
+      [61,65,'Frozen lake, reflection wrong'],[66,70,'Reindeer-less sleigh'],[71,75,'Pine forest, too quiet'],
+      [76,80,'Yule log fire, dying'],[81,85,'Village square, everyone gone'],
+      [86,90,'Threshold on the longest night'],[91,95,'Snowed-in manor'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Ancient Worlds',
+    entries: [
+      [1,5,'Coliseum at night'],[6,10,'Temple at the edge of a jungle'],[11,15,'Oracle cave, torchlit'],
+      [16,20,'Burial mound, opened'],[21,25,'City below the sand'],[26,30,'Hanging garden, overgrown'],
+      [31,35,'Sacrificial altar, peak of mountain'],[36,40,'Maze under a palace'],[41,45,'Underground ossuary'],
+      [46,50,'River delta at dusk'],[51,55,'Siege camp at night'],[56,60,'Chariot track, abandoned'],
+      [61,65,'Library that survived'],[66,70,'Throne room, pre-ruin'],[71,75,'Market square, ghost town'],
+      [76,80,'Ship graveyard, inland'],[81,85,'Ash-preserved city'],[86,90,'Flooded forum'],
+      [91,95,'Monument with no inscription'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Urban Decay',
+    entries: [
+      [1,5,'Subway tunnel, lights out'],[6,10,'Rooftop at 3am'],[11,15,'Parking garage, level B3'],
+      [16,20,'Hospital corridor, abandoned'],[21,25,'Hotel pool, empty'],[26,30,'Neon alley in the rain'],
+      [31,35,'Elevator, stuck'],[36,40,'Office floor, after hours'],[41,45,'Shopping mall, no power'],
+      [46,50,'Construction site at night'],[51,55,'Train yard'],[56,60,'Condemned apartment, top floor'],
+      [61,65,'Diner with one patron'],[66,70,'Stadium, off-season'],[71,75,'Water tower access'],
+      [76,80,'Overpass, foggy'],[81,85,'Radio station, no signal'],[86,90,'Movie theatre, midnight screening'],
+      [91,95,'Laundromat, 4am'],[96,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Dreamscapes',
+    entries: [
+      [1,5,'Hallway that keeps going'],[6,10,'Room from childhood, wrong'],[11,15,'Sky below, ground above'],
+      [16,20,'School with no exits'],[21,25,'Forest of clocks'],[26,30,'Sea of glass'],
+      [31,35,'City that rearranges itself'],[36,40,'Theatre showing your life'],[41,45,'Library with living books'],
+      [46,50,'Train with no destination'],[51,55,'House with too many rooms'],[56,60,'Garden of faces'],
+      [61,65,'Mirror maze, no reflections'],[66,70,'Flooded ballroom, underwater'],[71,75,'Mountain that breathes'],
+      [76,80,'Market selling memories'],[81,85,'Church with wrong saints'],[86,90,'Void with furniture'],
+      [91,95,'Desert of teeth'],[96,100,"Player's choice"]
+    ]
+  }
+];
+
+const MOOD_POOL = [
+  {
+    name: 'Classic Horror',
+    entries: [
+      [1,10,'Predatory menace'],[11,20,'Tragic longing'],[21,30,'Seductive danger'],
+      [31,40,'Wild, feral freedom'],[41,50,'Creeping dread'],[51,60,'Dark majesty / power'],
+      [61,70,'Playful cruelty'],[71,80,'Protective instinct'],[81,90,'Corrupted grace'],
+      [91,100,'Triumph / dominance']
+    ]
+  },
+  {
+    name: 'Winter Feeling',
+    entries: [
+      [1,12,'Desolate isolation'],[13,24,'Ancient, unhurried menace'],[25,36,'Fragile, frozen beauty'],
+      [37,48,'Hunger that will not sleep'],[49,60,'Melancholy preservation'],[61,72,'Silent predatory calm'],
+      [73,84,'Desperate survival'],[85,96,'Cold, regal dominance'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Dark Romance',
+    entries: [
+      [1,12,'Consuming obsession'],[13,24,'Tragic, doomed tenderness'],[25,36,'Seductive menace'],
+      [37,48,"Grief that won't let go"],[49,60,'Forbidden longing'],[61,72,'Possessive devotion'],
+      [73,84,'Beautiful destruction'],[85,96,'Bittersweet resignation'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Primal & Wild',
+    entries: [
+      [1,12,'Wild and untameable'],[13,24,'Patient, apex predator calm'],[25,36,'Protective of territory'],
+      [37,48,'Ancient, unknowable instinct'],[49,60,'Playful but dangerous'],[61,72,'Wounded and furious'],
+      [73,84,'Sacred, reverential awe'],[85,96,'Transformation mid-moment'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Old Magic',
+    entries: [
+      [1,12,'Mischief and hidden malice'],[13,24,'Bargain with no good outcome'],
+      [25,36,'Unnerving, inhuman beauty'],[37,48,'Ancient grief behind laughter'],
+      [49,60,'Gleeful, unrepentant chaos'],[61,72,'Dangerous hospitality'],
+      [73,84,'Something pretending to be kind'],[85,96,'Loss of time, loss of self'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Deep & Alien',
+    entries: [
+      [1,12,'Crushing, absolute darkness'],[13,24,'Cold, alien intelligence'],
+      [25,36,'Luring beauty above, horror below'],[37,48,'The sea as grief'],
+      [49,60,'Ancient and indifferent'],[61,72,'Hunger from the abyss'],
+      [73,84,'Drowned and beautiful'],[85,96,'The tide always wins'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Burning Ambition',
+    entries: [
+      [1,12,'Burning, relentless ambition'],[13,24,'The heat of a bad bargain'],
+      [25,36,'Seductive, dangerous power'],[37,48,'Slow, inevitable ruin'],
+      [49,60,'Furious, elemental rage'],[61,72,'Tyrannical dominance'],
+      [73,84,'Corrupted righteous fury'],[85,96,'Ecstatic destruction'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Folk Horror',
+    entries: [
+      [1,12,'Something wrong beneath plenty'],[13,24,'Hollow, rotting beauty'],
+      [25,36,'The cost of the harvest'],[37,48,'Slow, inevitable decay'],
+      [49,60,'Uncanny rural dread'],[61,72,'Fertility and death intertwined'],
+      [73,84,'Primal, instinctive fear'],[85,96,'Folk horror ritual weight'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Domestic Dread',
+    entries: [
+      [1,12,'The house is watching'],[13,24,'Memory trapped in walls'],
+      [25,36,'Something that used to be loved'],[37,48,'Domestic dread'],
+      [49,60,"Can't leave, can't stay"],[61,72,'Architectural wrongness'],
+      [73,84,'Time slipping in a specific room'],[85,96,'The grief of a place'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Halloween',
+    entries: [
+      [1,10,'Playful but sharp under the surface'],[11,20,'Nostalgic Halloween dread'],
+      [21,30,'Something ancient wearing a costume'],[31,40,'The fun that turns real'],
+      [41,50,'Classic gothic horror'],[51,60,'Candy-coloured nightmare'],
+      [61,70,"Children's story gone wrong"],[71,80,"The night the rules don't apply"],
+      [81,90,'Ritual disguised as tradition'],[91,100,'The last house on the street']
+    ]
+  },
+  {
+    name: 'Grief & Memory',
+    entries: [
+      [1,12,"Grief that won't move on"],[13,24,'The love that outlasted the person'],
+      [25,36,'Quiet, final acceptance'],[37,48,'Wrong joy — too happy to be here'],
+      [49,60,'Absence as presence'],[61,72,'Anger at the unfairness of death'],
+      [73,84,'Something returned, but incomplete'],[85,96,'Ritual as comfort'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'The Long Night',
+    entries: [
+      [1,12,'Punishment dressed as gift-giving'],[13,24,'Ancient ritual, modern veneer'],
+      [25,36,'The dark at the heart of celebration'],[37,48,'Generosity with teeth'],
+      [49,60,'Solstice awe — something huge in the dark'],[61,72,'The cold that finds you inside'],
+      [73,84,'Festive warmth turned threatening'],[85,96,'The longest night, and what it hides'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Power & Hubris',
+    entries: [
+      [1,12,'Intoxicating, overwhelming power'],[13,24,'The price of forbidden knowledge'],
+      [25,36,'Pride before a very specific fall'],[37,48,'Reluctant, terrible authority'],
+      [49,60,'Worship that warps the worshipped'],[61,72,'The loneliness of being unkillable'],
+      [73,84,'Chosen and ruined by it'],[85,96,'Magnificence and its cost'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Transformation',
+    entries: [
+      [1,12,'The horror of the change, mid-way'],[13,24,'The relief of becoming something else'],
+      [25,36,'Neither one thing nor the other'],[37,48,'The body as betrayer'],
+      [49,60,'The self that survives transformation'],[61,72,'Becoming what you hunted'],
+      [73,84,'The shell left after the change'],[85,96,'Joyful, feral release'],[97,100,"Player's choice"]
+    ]
+  },
+  {
+    name: 'Cosmic Dread',
+    entries: [
+      [1,12,'Insignificance in the face of something vast'],[13,24,'The horror of being noticed'],
+      [25,36,'A pattern too big to see all at once'],[37,48,'The comfort of not understanding'],
+      [49,60,'Beauty that is also wrong'],[61,72,'Calm at the edge of the abyss'],
+      [73,84,'The weight of infinite indifference'],[85,96,'Something that has always been here'],[97,100,"Player's choice"]
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  FIXED CATEGORIES  — Lighting, Props, Pose
+//  These never rotate — universal enough to pair with anything
+// ═══════════════════════════════════════════════════════════════════════════
+
+const FIXED_LIGHTING = {
+  label: '4 · Lighting', sub: 'How It Looks', icon: '🕯️',
+  entries: [
+    [1,5,'Full moon backlighting'],[6,10,'Bioluminescent glow'],[11,15,'Lightning flash'],
+    [16,20,'Blood-red sunset'],[21,25,'Deep shadow silhouette'],[26,30,'Cold blue moonlight'],
+    [31,35,'Glowing eyes only'],[36,40,'Sickly green light'],[41,45,'Golden hour warmth'],
+    [46,50,'Eerie white fog light'],[51,55,'Flickering candlelight'],[56,60,'Neon / artificial colour'],
+    [61,65,'Fire glow from below'],[66,70,'Fog-diffused daylight'],[71,75,'Magical energy light'],
+    [76,80,'Lantern rim light'],[81,85,'Stained glass colour cast'],[86,90,'Near-total darkness'],
+    [91,95,'Two competing light sources'],[96,100,"Player's choice"]
+  ]
+};
+
+const FIXED_PROPS = {
+  label: '5 · Key Prop', sub: "What's There", icon: '🗡️',
+  entries: [
+    [1,2,'Shattered mirror'],[3,4,'Overflowing goblet'],[5,6,'Thorn-wrapped sword'],[7,8,'Giant spider web'],
+    [9,10,'Pocket watch (stopped)'],[11,12,'Glowing rune circle'],[13,14,'Skull crown'],[15,16,'Blood trail'],
+    [17,18,'Overgrown iron cage'],[19,20,'Floating candles'],[21,22,'Rusted weapon'],[23,24,'Dead roses'],
+    [25,26,'Mist tendrils'],[27,28,'Dark water reflection'],[29,30,'Parchment with sigil'],
+    [31,32,'Wings spread wide'],[33,34,'Scales / armour detail'],[35,36,'Glowing eyes in darkness'],
+    [37,38,'Chains (broken or taut)'],[39,40,'Potion vials'],[41,42,'Torn cloth / cloak'],
+    [43,44,'Leaking black ichor'],[45,46,'Scattered teeth / claws'],[47,48,'Burning candelabra'],
+    [49,50,'Tangled roots'],[51,52,'Ancient scroll / tome'],[53,54,'Severed chain'],
+    [55,56,'Trapped soul in a jar'],[57,58,'Cracked hourglass'],[59,60,'Wilted black flowers'],
+    [61,62,'Cauldron bubbling'],[63,64,'Falling feathers'],[65,66,'Crumbling stone idol'],
+    [67,68,'Stacked bones'],[69,70,'Ooze / slime trail'],[71,72,'Torn map'],
+    [73,74,'Moth swarm'],[75,76,'Cracked gemstone'],[77,78,'Bound prisoner'],
+    [79,80,'Scattered tarot cards'],[81,82,'Mushroom circle'],[83,84,'Haunted portrait'],
+    [85,86,'Crystal ball'],[87,88,'Footprints in ash'],[89,90,"Shadow that doesn't match"],
+    [91,92,'Glowing wound / mark'],[93,94,'Floating orb'],[95,96,'Mirror image of self'],
+    [97,98,'Second figure (obscured)'],[99,100,"Player's choice"]
+  ]
+};
+
+const FIXED_POSE = {
+  label: '6 · Pose & Composition', sub: "How It's Framed", icon: '🖼️',
+  entries: [
+    [1,10,'Extreme close-up — face / eye'],[11,20,'Low angle — looming upward'],
+    [21,30,'Full body — pinup stance'],[31,40,'Emerging from shadow or water'],
+    [41,50,'Back to viewer, looking over shoulder'],[51,60,'Reaching toward the viewer'],
+    [61,70,'Reclining / draped lazily'],[71,80,'Mid-roar / scream — mouth open'],
+    [81,90,'Profile silhouette'],[91,100,'Kneeling / collapsed but defiant']
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SEEDED RNG + POOL SELECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// pool index = total months elapsed since epoch, modulo pool length
+// this means each pool cycles independently on its own schedule
+function poolIndex(pool, monthOffset) {
+  const now = new Date();
+  const totalMonths = (now.getFullYear() - 2024) * 12 + now.getMonth() + monthOffset;
+  return ((totalMonths % pool.length) + pool.length) % pool.length;
+}
+
+function monthSeed(monthOffset) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = ((now.getMonth() + monthOffset) % 12 + 12) % 12;
+  const yr = y + Math.floor((now.getMonth() + monthOffset) / 12);
+  return yr * 100 + (m + 1);
+}
+
+// State
+let viewOffset = 0;  // 0 = current month, 1 = next, -1 = last, etc.
+const defaultRollsCache = {};
+const overrides = {};
+
+function getCategorySet(offset) {
+  const si = poolIndex(SUBJECT_POOL, offset);
+  const ei = poolIndex(SETTING_POOL, offset);
+  const mi = poolIndex(MOOD_POOL, offset);
+  return [
+    { ...SUBJECT_POOL[si], catLabel: '1 · The Subject', catIcon: '👾', rotating: true },
+    { ...SETTING_POOL[ei], catLabel: '2 · The Setting', catIcon: '🏚️', rotating: true },
+    { ...MOOD_POOL[mi],    catLabel: '3 · Mood & Theme', catIcon: '🌑', rotating: true },
+    { ...FIXED_LIGHTING,   catLabel: FIXED_LIGHTING.label, catIcon: FIXED_LIGHTING.icon, rotating: false },
+    { ...FIXED_PROPS,      catLabel: FIXED_PROPS.label,    catIcon: FIXED_PROPS.icon,    rotating: false },
+    { ...FIXED_POSE,       catLabel: FIXED_POSE.label,     catIcon: FIXED_POSE.icon,     rotating: false },
+  ];
+}
+
+function getDefaultRolls(offset) {
+  const key = `default_${offset}`;
+  if (defaultRollsCache[key]) return defaultRollsCache[key];
+  const rng = mulberry32(monthSeed(offset));
+  defaultRollsCache[key] = [0,1,2,3,4,5].map(() => Math.floor(rng() * 100) + 1);
+  return defaultRollsCache[key];
+}
+
+function currentRoll(catIdx) {
+  const key = `${viewOffset}_${catIdx}`;
+  return overrides[key] !== undefined ? overrides[key] : getDefaultRolls(viewOffset)[catIdx];
+}
+
+function rollD100() { return Math.floor(Math.random() * 100) + 1; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+
+function entryForRoll(entries, roll) {
+  return entries.find(([lo, hi]) => roll >= lo && roll <= hi);
+}
+function rollLabel(lo, hi) {
+  return lo === hi ? String(lo).padStart(2,'0') : `${String(lo).padStart(2,'0')}–${String(hi).padStart(2,'0')}`;
+}
+
+function buildCard(cat, catIdx, activeRoll) {
+  const activeEntry = entryForRoll(cat.entries, activeRoll);
+  const twoCol = cat.entries.length > 12;
+  let body = '';
+
+  if (twoCol) {
+    const half = Math.ceil(cat.entries.length / 2);
+    const L = cat.entries.slice(0, half), R = cat.entries.slice(half);
+    body = `<table><thead><tr><th>Roll</th><th>Prompt</th><th>Roll</th><th>Prompt</th></tr></thead><tbody>
+      ${L.map((e,i) => {
+        const r = R[i];
+        const h1 = (activeEntry && e[0]===activeEntry[0]) ? 'highlight' : '';
+        const h2 = (r && activeEntry && r[0]===activeEntry[0]) ? 'highlight' : '';
+        return `<tr class="${h1}"><td class="roll">${rollLabel(e[0],e[1])}</td><td class="prompt">${e[2]}</td>
+          ${r ? `<td class="roll ${h2}">${rollLabel(r[0],r[1])}</td><td class="prompt ${h2}">${r[2]}</td>` : '<td></td><td></td>'}
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  } else {
+    body = `<table><thead><tr><th>Roll</th><th>Prompt</th></tr></thead><tbody>
+      ${cat.entries.map(e => {
+        const h = (activeEntry && e[0]===activeEntry[0]) ? 'highlight' : '';
+        return `<tr class="${h}"><td class="roll">${rollLabel(e[0],e[1])}</td><td class="prompt">${e[2]}</td></tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+
+  const rotatesBadge = cat.rotating ? `<span class="rotates-badge">rotates</span>` : '';
+  const labelText = cat.catLabel || cat.label;
+  const subText   = cat.sub;
+  const icon      = cat.catIcon || cat.icon;
+
+  return `<div class="card cat-${catIdx}${cat.rotating ? ' rotating' : ''}">
+    <div class="card-header">
+      <span class="cat-icon">${icon}</span>
+      <span class="cat-label">${labelText}${rotatesBadge} <em style="opacity:.45;font-style:italic;font-family:'IM Fell English',serif;letter-spacing:0;font-size:1.1em;">(${subText})</em></span>
+      <span class="cat-num"><button class="btn btn-secondary" style="padding:3px 10px;font-size:0.68em;" onclick="reroll(${catIdx})">↺&nbsp;${activeRoll}</button></span>
+    </div>${body}</div>`;
+}
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function render() {
+  const now = new Date();
+  const absMonth = (now.getMonth() + viewOffset + 120) % 12;
+  const yearShift = Math.floor((now.getMonth() + viewOffset) / 12);
+  const displayYear = now.getFullYear() + yearShift;
+
+  const cats = getCategorySet(viewOffset);
+  const si = poolIndex(SUBJECT_POOL, viewOffset);
+  const ei = poolIndex(SETTING_POOL, viewOffset);
+  const mi = poolIndex(MOOD_POOL, viewOffset);
+
+  // Subtle theme label
+  const isCurrentMonth = viewOffset === 0;
+  const themeText = isCurrentMonth
+    ? `${MONTH_NAMES[absMonth]} · <em>${SUBJECT_POOL[si].name}</em> / <em>${SETTING_POOL[ei].name}</em> / <em>${MOOD_POOL[mi].name}</em>`
+    : `Previewing ${MONTH_NAMES[absMonth]} ${displayYear} · <em>${SUBJECT_POOL[si].name}</em> / <em>${SETTING_POOL[ei].name}</em> / <em>${MOOD_POOL[mi].name}</em>`;
+  document.getElementById('themeLabel').innerHTML = themeText;
+
+  document.getElementById('monthBadge').textContent = `${MONTH_NAMES[absMonth]} ${displayYear}`;
+
+  // Month chips: show current ±5
+  const chipHtml = Array.from({length: 11}, (_,i) => {
+    const off = i - 5;
+    const m = ((now.getMonth() + off) % 12 + 12) % 12;
+    const active = off === viewOffset ? 'active' : '';
+    return `<button class="chip ${active}" onclick="setOffset(${off})">${MONTH_NAMES[m].slice(0,3)}</button>`;
+  }).join('');
+  document.getElementById('monthChips').innerHTML = chipHtml;
+
+  const rolls = cats.map((_,i) => currentRoll(i));
+  document.getElementById('grid').innerHTML = cats.map((cat, i) => buildCard(cat, i, rolls[i])).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function rollAll() {
+  [0,1,2,3,4,5].forEach(i => { overrides[`${viewOffset}_${i}`] = rollD100(); });
+  document.getElementById('resultBar').classList.remove('visible');
+  render(); showResultBar();
+}
+function reroll(catIdx) {
+  overrides[`${viewOffset}_${catIdx}`] = rollD100();
+  render();
+}
+function clearAll() {
+  [0,1,2,3,4,5].forEach(i => delete overrides[`${viewOffset}_${i}`]);
+  document.getElementById('resultBar').classList.remove('visible');
+  render();
+}
+function setOffset(off) {
+  viewOffset = off;
+  document.getElementById('resultBar').classList.remove('visible');
+  render();
+}
+function showResultBar() {
+  const cats = getCategorySet(viewOffset);
+  const bar = document.getElementById('resultBar');
+  const parts = cats.map((cat, i) => {
+    const e = entryForRoll(cat.entries, currentRoll(i));
+    return `<strong>${cat.catIcon || cat.icon} ${e ? e[2] : '?'}</strong>`;
+  });
+  bar.innerHTML = `🎲 Scene: ${parts.join(' &nbsp;·&nbsp; ')}`;
+  bar.classList.add('visible');
+}
+
+render();
+</script>
+</body>
+</html>
